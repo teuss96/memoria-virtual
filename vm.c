@@ -36,7 +36,8 @@ struct tlb_entry {
 };
 
 static struct tlb_entry tlb[TLB_SIZE];
-static unsigned long tlb_stamp[TLB_SIZE]; // instante em que a posicao foi gravada
+static unsigned long tlb_stamp[TLB_SIZE]; // fifo: instante da gravacao; lru: do ultimo uso
+static enum policy tlb_policy;
 
 // mostra o erro e encerra o programa
 static void die(const char *fmt, ...)
@@ -147,7 +148,8 @@ static int tlb_lookup(int page)
     return -1;
 }
 
-// grava a traducao na posicao mais antiga da TLB e devolve essa posicao
+// grava a traducao na posicao de menor carimbo (a mais antiga no fifo, a
+// menos usada recentemente no lru) e devolve essa posicao
 static int tlb_insert(int page, int frame)
 {
     int slot = oldest(tlb_stamp, TLB_SIZE);
@@ -184,7 +186,6 @@ static int page_in(FILE *store, int page)
 
 int main(int argc, char **argv)
 {
-    enum policy tlb_policy;
     uint32_t *addrs;
     size_t n_addrs, i;
     unsigned long faults = 0, tlb_hits = 0;
@@ -221,6 +222,8 @@ int main(int argc, char **argv)
         if (slot != -1) {
             tlb_hits++;
             frame = tlb[slot].frame;
+            if (tlb_policy == LRU)
+                tlb_stamp[slot] = now;
         } else {
             frame = page_table[page];
             if (frame == -1) {
@@ -243,7 +246,6 @@ int main(int argc, char **argv)
     if (ferror(out) || fclose(out) != 0)
         die("falha ao gravar " OUTPUT_FILE);
     fclose(store);
-    (void)tlb_policy;
     free(addrs);
     return 0;
 }
