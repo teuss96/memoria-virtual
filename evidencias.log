@@ -1,0 +1,329 @@
+Script started on 2026-11-24 17:44:40-03:00 [COMMAND="date; pwd; uname -sr; gcc --version | head -1; make --version | head -1" <not executed on terminal>]
+Tue Nov 24 17:44:40 -03 2026
+/mnt/c/Users/PC/Downloads/Faculdade/SO/Implementacao06/mrbm
+Linux 6.6.87.2-microsoft-standard-WSL2
+gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0
+GNU Make 4.4.1
+
+Script done on 2026-11-24 17:44:40-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:44:40-03:00 [COMMAND="make clean; make; ./vm; echo "exit=$?"; ./vm addresses.txt lru; echo "exit=$?"; ./vm addresses.txt lru fifo extra; echo "exit=$?"; ./vm addresses.txt LRU fifo; echo "exit=$?"; ./vm addresses.txt lru clock; echo "exit=$?"; ./vm addresses.txt lru fifo; echo "exit=$?"" <not executed on terminal>]
+rm -f vm correct.txt
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+Erro: numero de argumentos invalido
+uso: ./vm <arquivo_de_enderecos> <fifo|lru> <fifo|lru>
+exit=1
+Erro: numero de argumentos invalido
+uso: ./vm <arquivo_de_enderecos> <fifo|lru> <fifo|lru>
+exit=1
+Erro: numero de argumentos invalido
+uso: ./vm <arquivo_de_enderecos> <fifo|lru> <fifo|lru>
+exit=1
+Erro: algoritmo de substituicao de pagina invalido: 'LRU' (use fifo ou lru)
+exit=1
+Erro: algoritmo de substituicao da TLB invalido: 'clock' (use fifo ou lru)
+exit=1
+exit=0
+
+Script done on 2026-11-24 17:44:41-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:45:35-03:00 [COMMAND="date; make; ./vm testes/dados/addresses.txt lru fifo; echo "exit=$?"; ./vm nao_existe.txt lru fifo; echo "exit=$?"; ./vm testes lru fifo; echo "exit=$?"; printf "16916\nabc\n" > /tmp/e1.txt; ./vm /tmp/e1.txt lru fifo; echo "exit=$?"; printf "16916\n-5\n" > /tmp/e2.txt; ./vm /tmp/e2.txt lru fifo; echo "exit=$?"; printf "16916 62493\n" > /tmp/e3.txt; ./vm /tmp/e3.txt lru fifo; echo "exit=$?"; printf "4294967296\n" > /tmp/e4.txt; ./vm /tmp/e4.txt lru fifo; echo "exit=$?"; : > /tmp/e5.txt; ./vm /tmp/e5.txt lru fifo; echo "exit=$?"; printf "12.5\n" > /tmp/e6.txt; ./vm /tmp/e6.txt lru fifo; echo "exit=$?"; ./vm testes/dados/BACKING_STORE.bin lru fifo; echo "exit=$?"; ls correct.txt" <not executed on terminal>]
+Tue Nov 24 17:45:35 -03 2026
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+exit=0
+Erro: nao foi possivel abrir 'nao_existe.txt': No such file or directory
+exit=1
+Erro: falha ao ler 'testes'
+exit=1
+Erro: '/tmp/e1.txt', linha 2: esperado um endereco inteiro sem sinal
+exit=1
+Erro: '/tmp/e2.txt', linha 2: esperado um endereco inteiro sem sinal
+exit=1
+Erro: '/tmp/e3.txt', linha 1: texto inesperado depois do endereco
+exit=1
+Erro: '/tmp/e4.txt', linha 1: endereco nao cabe em 32 bits
+exit=1
+Erro: '/tmp/e5.txt' nao contem nenhum endereco
+exit=1
+Erro: '/tmp/e6.txt', linha 1: texto inesperado depois do endereco
+exit=1
+Erro: 'testes/dados/BACKING_STORE.bin', linha 1: linha longa demais
+exit=1
+ls: cannot access 'correct.txt': No such file or directory
+
+Script done on 2026-11-24 17:45:35-03:00 [COMMAND_EXIT_CODE="2"]
+Script started on 2026-11-24 17:46:26-03:00 [COMMAND="date; make; ./vm addresses.txt fifo fifo; echo "exit=$?"; head -3 correct.txt; tail -3 correct.txt; sed "s/ TLB: [0-9]*//" testes/esperado_lru_fifo.txt | head -128 > /tmp/ref128.txt; head -128 correct.txt | diff - /tmp/ref128.txt && echo "128 primeiras linhas (sem substituicao) iguais ao gabarito"; gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -DNUM_FRAMES=256 -o /tmp/vm256 vm.c && /tmp/vm256 addresses.txt fifo fifo && tail -3 correct.txt; cd /tmp && /mnt/c/Users/PC/Downloads/Faculdade/SO/Implementacao06/mrbm/vm /mnt/c/Users/PC/Downloads/Faculdade/SO/Implementacao06/mrbm/addresses.txt fifo fifo; echo "exit=$?"" <not executed on terminal>]
+Tue Nov 24 17:46:26 -03 2026
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+exit=0
+Virtual address: 16916 Physical address: 20 Value: 0
+Virtual address: 62493 Physical address: 285 Value: 0
+Virtual address: 30198 Physical address: 758 Value: 29
+Number of Translated Addresses = 1000
+Page Faults = 538
+Page Fault Rate = 0.538
+128 primeiras linhas (sem substituicao) iguais ao gabarito
+Number of Translated Addresses = 1000
+Page Faults = 244
+Page Fault Rate = 0.244
+Erro: nao foi possivel abrir BACKING_STORE.bin: No such file or directory
+exit=1
+
+Script done on 2026-11-24 17:46:27-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:47:25-03:00 [COMMAND="date; make; ./vm addresses.txt lru fifo; echo "exit=$?"; tail -3 correct.txt; sed "s/ TLB: [0-9]*//" testes/esperado_lru_fifo.txt | grep -v "^TLB" | diff - correct.txt && echo "lru: enderecos fisicos, valores e faltas iguais ao gabarito (sem as colunas da TLB)"; ./vm addresses.txt fifo fifo; tail -2 correct.txt" <not executed on terminal>]
+Tue Nov 24 17:47:25 -03 2026
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+exit=0
+Number of Translated Addresses = 1000
+Page Faults = 539
+Page Fault Rate = 0.539
+lru: enderecos fisicos, valores e faltas iguais ao gabarito (sem as colunas da TLB)
+Page Faults = 538
+Page Fault Rate = 0.538
+
+Script done on 2026-11-24 17:47:26-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:48:04-03:00 [COMMAND="date; make; ./vm addresses.txt lru fifo; echo "exit=$?"; diff correct.txt testes/esperado_lru_fifo.txt && echo "lru fifo: correct.txt identico ao gabarito do professor"; tail -5 correct.txt; ./vm addresses.txt fifo fifo; python3 testes/referencia.py addresses.txt fifo fifo | diff - correct.txt && echo "fifo fifo: identico ao modelo de referencia"; tail -4 correct.txt" <not executed on terminal>]
+Tue Nov 24 17:48:04 -03 2026
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+exit=0
+lru fifo: correct.txt identico ao gabarito do professor
+Number of Translated Addresses = 1000
+Page Faults = 539
+Page Fault Rate = 0.539
+TLB Hits = 54
+TLB Hit Rate = 0.054
+fifo fifo: identico ao modelo de referencia
+Page Faults = 538
+Page Fault Rate = 0.538
+TLB Hits = 54
+TLB Hit Rate = 0.054
+
+Script done on 2026-11-24 17:48:05-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:48:27-03:00 [COMMAND="date; make; for p in fifo lru; do for t in fifo lru; do ./vm addresses.txt $p $t; echo "$p $t exit=$? $(tail -4 correct.txt | tr "\n" " ")"; python3 testes/referencia.py addresses.txt $p $t | diff -q - correct.txt && echo "  identico ao modelo de referencia"; done; done; ./vm addresses.txt lru fifo; diff correct.txt testes/esperado_lru_fifo.txt && echo "lru fifo: identico ao gabarito do professor"" <not executed on terminal>]
+Tue Nov 24 17:48:27 -03 2026
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+fifo fifo exit=0 Page Faults = 538 Page Fault Rate = 0.538 TLB Hits = 54 TLB Hit Rate = 0.054 
+  identico ao modelo de referencia
+fifo lru exit=0 Page Faults = 538 Page Fault Rate = 0.538 TLB Hits = 55 TLB Hit Rate = 0.055 
+  identico ao modelo de referencia
+lru fifo exit=0 Page Faults = 539 Page Fault Rate = 0.539 TLB Hits = 54 TLB Hit Rate = 0.054 
+  identico ao modelo de referencia
+lru lru exit=0 Page Faults = 539 Page Fault Rate = 0.539 TLB Hits = 55 TLB Hit Rate = 0.055 
+  identico ao modelo de referencia
+lru fifo: identico ao gabarito do professor
+
+Script done on 2026-11-24 17:48:29-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:48:57-03:00 [COMMAND="date; make clean; make; time ./vm addresses.txt lru fifo; echo "exit=$?"; diff correct.txt testes/esperado_lru_fifo.txt && echo "lru fifo com threads: identico ao gabarito do professor"; for p in fifo lru; do for t in fifo lru; do ./vm addresses.txt $p $t; python3 testes/referencia.py addresses.txt $p $t | diff -q - correct.txt && echo "$p $t: identico ao modelo de referencia"; done; done; gcc -std=c11 -Wall -Wextra -Wpedantic -O1 -g -pthread -fsanitize=thread -o /tmp/vm_tsan vm.c && /tmp/vm_tsan addresses.txt lru lru; echo "tsan exit=$?"; diff -q correct.txt <(python3 testes/referencia.py addresses.txt lru lru) && echo "tsan: saida identica, nenhum aviso de corrida"" <not executed on terminal>]
+Tue Nov 24 17:48:57 -03 2026
+rm -f vm correct.txt
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+
+real	0m1.188s
+user	0m0.078s
+sys	0m0.926s
+exit=0
+lru fifo com threads: identico ao gabarito do professor
+fifo fifo: identico ao modelo de referencia
+fifo lru: identico ao modelo de referencia
+lru fifo: identico ao modelo de referencia
+lru lru: identico ao modelo de referencia
+tsan exit=0
+tsan: saida identica, nenhum aviso de corrida
+
+Script done on 2026-11-24 17:49:06-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:50:22-03:00 [COMMAND="date; make clean; make; make test; echo "exit=$?"" <not executed on terminal>]
+Tue Nov 24 17:50:22 -03 2026
+rm -f vm vm_asan vm_tsan correct.txt
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+sh testes/run.sh ./vm
+== saida correta
+ok   - gabarito do professor (./vm addresses.txt lru fifo)
+ok   - mesmo arquivo com fim de linha CRLF
+ok   - addresses.txt com pagina=fifo tlb=fifo
+ok   - addresses.txt com pagina=fifo tlb=lru
+ok   - addresses.txt com pagina=lru tlb=fifo
+ok   - addresses.txt com pagina=lru tlb=lru
+ok   - 3000 enderecos aleatorios com pagina=fifo tlb=fifo
+ok   - 3000 enderecos aleatorios com pagina=fifo tlb=lru
+ok   - 3000 enderecos aleatorios com pagina=lru tlb=fifo
+ok   - 3000 enderecos aleatorios com pagina=lru tlb=lru
+ok   - pagina removida da memoria tambem sai da TLB
+ok   -   o reacesso a pagina removida conta como falta
+ok   -   e nao como acerto na TLB
+ok   - espacos, linha em branco e ultima linha sem 
+
+ok   - endereco acima de 16 bits usa so os 16 bits baixos (95734 = 65536 + 30198)
+== tratamento de erro
+ok   - sem argumentos -> Erro: numero de argumentos invalido
+ok   - so o arquivo -> Erro: numero de argumentos invalido
+ok   - falta o algoritmo da TLB -> Erro: numero de argumentos invalido
+ok   - argumento sobrando -> Erro: numero de argumentos invalido
+ok   - algoritmo de pagina desconhecido -> Erro: algoritmo de substituicao de pagina invalido: 'clock' (use fifo ou lru)
+ok   - algoritmo da TLB desconhecido -> Erro: algoritmo de substituicao da TLB invalido: 'random' (use fifo ou lru)
+ok   - algoritmo em maiusculas -> Erro: algoritmo de substituicao de pagina invalido: 'LRU' (use fifo ou lru)
+ok   - algoritmo vazio -> Erro: algoritmo de substituicao da TLB invalido: '' (use fifo ou lru)
+FAIL - argumentos fora de ordem (status 1)
+Erro: algoritmo de substituicao da TLB invalido: 'addresses.txt' (use fifo ou lru)
+ok   - arquivo de enderecos inexistente -> Erro: nao foi possivel abrir 'nao_existe.txt': No such file or directory
+ok   - diretorio no lugar do arquivo -> Erro: falha ao ler 'pasta'
+ok   - arquivo sem permissao de leitura -> Erro: nao foi possivel abrir 'sem_permissao.txt': Permission denied
+ok   - arquivo vazio -> Erro: 'vazio.txt' nao contem nenhum endereco
+ok   - arquivo so com linhas em branco -> Erro: 'brancos.txt' nao contem nenhum endereco
+ok   - linha com letras -> Erro: 'letras.txt', linha 2: esperado um endereco inteiro sem sinal
+ok   - endereco negativo -> Erro: 'negativo.txt', linha 2: esperado um endereco inteiro sem sinal
+ok   - dois enderecos na mesma linha -> Erro: 'dois.txt', linha 1: texto inesperado depois do endereco
+ok   - enderecos separados por virgula -> Erro: 'virgula.txt', linha 1: texto inesperado depois do endereco
+ok   - numero com casa decimal -> Erro: 'decimal.txt', linha 1: texto inesperado depois do endereco
+ok   - endereco em hexadecimal -> Erro: 'hexa.txt', linha 1: texto inesperado depois do endereco
+ok   - endereco maior que 32 bits -> Erro: 'grande.txt', linha 1: endereco nao cabe em 32 bits
+ok   - endereco que estoura unsigned long long -> Erro: 'enorme.txt', linha 1: endereco nao cabe em 32 bits
+ok   - linha com 200 digitos -> Erro: 'longa.txt', linha 1: linha longa demais
+ok   - erro so na ultima linha: nada e gravado -> Erro: 'fim_ruim.txt', linha 1000: esperado um endereco inteiro sem sinal
+ok   - arquivo binario no lugar dos enderecos -> Erro: 'BACKING_STORE.bin', linha 1: linha longa demais
+ok   - BACKING_STORE.bin ausente -> Erro: nao foi possivel abrir BACKING_STORE.bin: No such file or directory
+ok   - BACKING_STORE.bin truncado -> Erro: BACKING_STORE.bin tem menos de 65536 bytes
+== 41 ok, 1 falharam, 0 pulados
+make: *** [Makefile:9: test] Error 1
+exit=2
+
+Script done on 2026-11-24 17:50:39-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:50:49-03:00 [COMMAND="date; make test 2>&1 | grep -v "^ok"; echo "exit=$?"; make sanitize 2>&1 | grep -v "^ok"; echo "exit=$?"; ls" <not executed on terminal>]
+Tue Nov 24 17:50:49 -03 2026
+sh testes/run.sh ./vm
+== saida correta
+== tratamento de erro
+== 42 ok, 0 falharam, 0 pulados
+exit=0
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -fsanitize=address,undefined -fno-sanitize-recover=all -o vm_asan vm.c
+sh testes/run.sh ./vm_asan
+== saida correta
+== tratamento de erro
+== 42 ok, 0 falharam, 0 pulados
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -fsanitize=thread -o vm_tsan vm.c
+sh testes/run.sh ./vm_tsan
+== saida correta
+== tratamento de erro
+== 42 ok, 0 falharam, 0 pulados
+exit=0
+BACKING_STORE.bin  addresses.txt   testes  vm.c	    vm_tsan
+Makefile	   evidencias.log  vm	   vm_asan
+
+Script done on 2026-11-24 17:53:10-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:53:31-03:00 [COMMAND="date; make clean; make; make test; echo "exit do make test=$?"" <not executed on terminal>]
+Tue Nov 24 17:53:31 -03 2026
+rm -f vm vm_asan vm_tsan correct.txt
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+sh testes/run.sh ./vm
+== saida correta
+ok   - gabarito do professor (./vm addresses.txt lru fifo)
+ok   - mesmo arquivo com fim de linha CRLF
+ok   - addresses.txt com pagina=fifo tlb=fifo
+ok   - addresses.txt com pagina=fifo tlb=lru
+ok   - addresses.txt com pagina=lru tlb=fifo
+ok   - addresses.txt com pagina=lru tlb=lru
+ok   - 3000 enderecos aleatorios com pagina=fifo tlb=fifo
+ok   - 3000 enderecos aleatorios com pagina=fifo tlb=lru
+ok   - 3000 enderecos aleatorios com pagina=lru tlb=fifo
+ok   - 3000 enderecos aleatorios com pagina=lru tlb=lru
+ok   - pagina removida da memoria tambem sai da TLB
+ok   -   o reacesso a pagina removida conta como falta
+ok   -   e nao como acerto na TLB
+ok   - espacos, linha em branco e ultima linha sem quebra de linha
+ok   - endereco acima de 16 bits usa so os 16 bits baixos (95734 = 65536 + 30198)
+== tratamento de erro
+ok   - sem argumentos -> Erro: numero de argumentos invalido
+ok   - so o arquivo -> Erro: numero de argumentos invalido
+ok   - falta o algoritmo da TLB -> Erro: numero de argumentos invalido
+ok   - argumento sobrando -> Erro: numero de argumentos invalido
+ok   - algoritmo de pagina desconhecido -> Erro: algoritmo de substituicao de pagina invalido: 'clock' (use fifo ou lru)
+ok   - algoritmo da TLB desconhecido -> Erro: algoritmo de substituicao da TLB invalido: 'random' (use fifo ou lru)
+ok   - algoritmo em maiusculas -> Erro: algoritmo de substituicao de pagina invalido: 'LRU' (use fifo ou lru)
+ok   - algoritmo vazio -> Erro: algoritmo de substituicao da TLB invalido: '' (use fifo ou lru)
+ok   - argumentos fora de ordem -> Erro: algoritmo de substituicao da TLB invalido: 'addresses.txt' (use fifo ou lru)
+ok   - arquivo de enderecos inexistente -> Erro: nao foi possivel abrir 'nao_existe.txt': No such file or directory
+ok   - diretorio no lugar do arquivo -> Erro: falha ao ler 'pasta'
+ok   - arquivo sem permissao de leitura -> Erro: nao foi possivel abrir 'sem_permissao.txt': Permission denied
+ok   - arquivo vazio -> Erro: 'vazio.txt' nao contem nenhum endereco
+ok   - arquivo so com linhas em branco -> Erro: 'brancos.txt' nao contem nenhum endereco
+ok   - linha com letras -> Erro: 'letras.txt', linha 2: esperado um endereco inteiro sem sinal
+ok   - endereco negativo -> Erro: 'negativo.txt', linha 2: esperado um endereco inteiro sem sinal
+ok   - dois enderecos na mesma linha -> Erro: 'dois.txt', linha 1: texto inesperado depois do endereco
+ok   - enderecos separados por virgula -> Erro: 'virgula.txt', linha 1: texto inesperado depois do endereco
+ok   - numero com casa decimal -> Erro: 'decimal.txt', linha 1: texto inesperado depois do endereco
+ok   - endereco em hexadecimal -> Erro: 'hexa.txt', linha 1: texto inesperado depois do endereco
+ok   - endereco maior que 32 bits -> Erro: 'grande.txt', linha 1: endereco nao cabe em 32 bits
+ok   - endereco que estoura unsigned long long -> Erro: 'enorme.txt', linha 1: endereco nao cabe em 32 bits
+ok   - linha com 200 digitos -> Erro: 'longa.txt', linha 1: linha longa demais
+ok   - erro so na ultima linha: nada e gravado -> Erro: 'fim_ruim.txt', linha 1000: esperado um endereco inteiro sem sinal
+ok   - arquivo binario no lugar dos enderecos -> Erro: 'BACKING_STORE.bin', linha 1: linha longa demais
+ok   - BACKING_STORE.bin ausente -> Erro: nao foi possivel abrir BACKING_STORE.bin: No such file or directory
+ok   - BACKING_STORE.bin truncado -> Erro: BACKING_STORE.bin tem menos de 65536 bytes
+== 42 ok, 0 falharam, 0 pulados
+exit do make test=0
+
+Script done on 2026-11-24 17:53:48-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:53:48-03:00 [COMMAND="date; iguais=0; for i in $(seq 1 30); do ./vm addresses.txt lru fifo && cmp -s correct.txt testes/esperado_lru_fifo.txt && iguais=$((iguais + 1)); done; echo "30 execucoes de ./vm addresses.txt lru fifo: $iguais identicas ao gabarito"; make clean; ls" <not executed on terminal>]
+Tue Nov 24 17:53:48 -03 2026
+30 execucoes de ./vm addresses.txt lru fifo: 30 identicas ao gabarito
+rm -f vm vm_asan vm_tsan correct.txt
+BACKING_STORE.bin  Makefile  addresses.txt  evidencias.log  testes  vm.c
+
+Script done on 2026-11-24 17:54:22-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:54:31-03:00 [COMMAND="date; echo "teste de mutacao: vm sem a invalidacao da TLB em page_in"; sed "s/^                tlb\[i\].page = -1;/                ;/" vm.c > /tmp/vm_mut.c; diff vm.c /tmp/vm_mut.c; gcc -std=c11 -O2 -pthread -o /tmp/vm_mut /tmp/vm_mut.c && sh testes/run.sh /tmp/vm_mut | grep -v "^ok"; echo "fim"" <not executed on terminal>]
+Tue Nov 24 17:54:31 -03 2026
+teste de mutacao: vm sem a invalidacao da TLB em page_in
+210c210
+<                 tlb[i].page = -1;
+---
+>                 ;
+== saida correta
+FAIL - 3000 enderecos aleatorios com pagina=fifo tlb=fifo
+422,423c422,423
+< Virtual address: 2375 TLB: 10 Physical address: 2887 Value: 17
+< Virtual address: 364 TLB: 13 Physical address: 3180 Value: 0
+---
+> Virtual address: 2375 TLB: 13 Physical address: 3143 Value: 81
+> Virtual address: 364 TLB: 14 Physical address: 3436 Value: 0
+426,429c426,429
+< Virtual address: 3039 TLB: 14 Physical address: 13279 Value: -9
+< Virtual address: 38133 TLB: 15 Physical address: 3573 Value: 0
+< Virtual address: 57103 TLB: 0 Physical address: 3599 Value: -61
+FAIL - 3000 enderecos aleatorios com pagina=fifo tlb=lru
+422,423c422,423
+< Virtual address: 2375 TLB: 6 Physical address: 2887 Value: 17
+< Virtual address: 364 TLB: 2 Physical address: 3180 Value: 0
+---
+> Virtual address: 2375 TLB: 2 Physical address: 3143 Value: 81
+> Virtual address: 364 TLB: 14 Physical address: 3436 Value: 0
+426,429c426,429
+< Virtual address: 3039 TLB: 14 Physical address: 13279 Value: -9
+< Virtual address: 38133 TLB: 7 Physical address: 3573 Value: 0
+< Virtual address: 57103 TLB: 5 Physical address: 3599 Value: -61
+FAIL - pagina removida da memoria tambem sai da TLB
+257c257
+< Virtual address: 3 TLB: 0 Physical address: 3 Value: 0
+---
+> Virtual address: 3 TLB: 9 Physical address: 259 Value: 0
+259,262c259,262
+< Page Faults = 129
+< Page Fault Rate = 0.502
+< TLB Hits = 128
+< TLB Hit Rate = 0.498
+---
+FAIL -   o reacesso a pagina removida conta como falta
+FAIL -   e nao como acerto na TLB
+== tratamento de erro
+== 37 ok, 5 falharam, 0 pulados
+fim
+
+Script done on 2026-11-24 17:54:48-03:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-11-24 17:55:00-03:00 [COMMAND="date; echo "reproducao a partir de um clone novo do repositorio publico"; rm -rf /tmp/clone_vm && git clone -q https://github.com/teuss96/memoria-virtual.git /tmp/clone_vm && cd /tmp/clone_vm && git log --oneline | head -3 && ls && make && ./vm addresses.txt lru fifo && diff correct.txt testes/esperado_lru_fifo.txt && echo "clone: correct.txt identico ao gabarito" && make test | tail -1" <not executed on terminal>]
+Tue Nov 24 17:55:00 -03 2026
+reproducao a partir de um clone novo do repositorio publico
+4194d45 build: adiciona alvos test e sanitize ao Makefile
+d3f8007 test: adiciona suíte com gabarito, modelo de referência, limites e erros
+885b8b2 test: adiciona modelo de referência em Python para conferir as saídas
+BACKING_STORE.bin  Makefile  addresses.txt  testes  vm.c
+gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -g -pthread -o vm vm.c
+clone: correct.txt identico ao gabarito
+== 42 ok, 0 falharam, 0 pulados
+
+Script done on 2026-11-24 17:55:18-03:00 [COMMAND_EXIT_CODE="0"]
