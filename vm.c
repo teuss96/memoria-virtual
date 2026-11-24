@@ -25,8 +25,9 @@ enum policy { FIFO, LRU };
 static signed char memory[NUM_FRAMES][PAGE_SIZE]; // memoria fisica
 static int page_table[NUM_PAGES];                 // quadro da pagina; -1 = fora da memoria
 static int frame_page[NUM_FRAMES];                // pagina no quadro; -1 = quadro livre
-static unsigned long frame_stamp[NUM_FRAMES];     // instante em que o quadro foi carregado
+static unsigned long frame_stamp[NUM_FRAMES];     // fifo: instante da carga; lru: do ultimo uso
 static unsigned long now;                         // relogio logico: numero do acesso atual
+static enum policy page_policy;
 
 // mostra o erro e encerra o programa
 static void die(const char *fmt, ...)
@@ -144,7 +145,7 @@ static int page_in(FILE *store, int page)
 
 int main(int argc, char **argv)
 {
-    enum policy page_policy, tlb_policy;
+    enum policy tlb_policy;
     uint32_t *addrs;
     size_t n_addrs, i;
     unsigned long faults = 0;
@@ -178,6 +179,8 @@ int main(int argc, char **argv)
         if (frame == -1) {
             faults++;
             frame = page_in(store, page);
+        } else if (page_policy == LRU) {
+            frame_stamp[frame] = now; // no fifo o carimbo so muda na carga
         }
         fprintf(out, "Virtual address: %lu Physical address: %d Value: %d\n",
                 (unsigned long)addrs[i], frame * PAGE_SIZE + offset, memory[frame][offset]);
@@ -189,7 +192,6 @@ int main(int argc, char **argv)
     if (ferror(out) || fclose(out) != 0)
         die("falha ao gravar " OUTPUT_FILE);
     fclose(store);
-    (void)page_policy;
     (void)tlb_policy;
     free(addrs);
     return 0;
