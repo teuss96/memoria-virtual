@@ -6,6 +6,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -137,15 +138,48 @@ static int oldest(const unsigned long *stamp, int n)
     return best;
 }
 
-// posicao da pagina na TLB, ou -1 se ela nao estiver la
+// o que cada thread de busca recebe (slot, page) e devolve (hit)
+struct probe {
+    int slot;
+    int page;
+    int hit;
+};
+
+// corpo da thread: confere uma unica posicao da TLB
+static void *tlb_probe(void *arg)
+{
+    struct probe *p = arg;
+
+    p->hit = tlb[p->slot].page == p->page;
+    return NULL;
+}
+
+// posicao da pagina na TLB, ou -1 se ela nao estiver la; a busca usa uma
+// thread por posicao. As threads so leem a TLB, cada uma escreve apenas no
+// proprio struct probe e a thread principal espera todas antes de mexer na
+// TLB de novo, entao nao existe dado compartilhado que precise de mutex
 static int tlb_lookup(int page)
 {
-    int i;
+    pthread_t tid[TLB_SIZE];
+    struct probe probe[TLB_SIZE];
+    int i, err, found = -1;
 
-    for (i = 0; i < TLB_SIZE; i++)
-        if (tlb[i].page == page)
-            return i;
-    return -1;
+    for (i = 0; i < TLB_SIZE; i++) {
+        probe[i].slot = i;
+        probe[i].page = page;
+        probe[i].hit = 0;
+        err = pthread_create(&tid[i], NULL, tlb_probe, &probe[i]);
+        if (err != 0)
+            die("falha ao criar thread de busca na TLB: %s", strerror(err));
+    }
+    for (i = 0; i < TLB_SIZE; i++) {
+        err = pthread_join(tid[i], NULL);
+        if (err != 0)
+            die("falha ao esperar thread de busca na TLB: %s", strerror(err));
+        if (probe[i].hit)
+            found = i; // uma pagina ocupa no maximo uma posicao
+    }
+    return found;
 }
 
 // grava a traducao na posicao de menor carimbo (a mais antiga no fifo, a
