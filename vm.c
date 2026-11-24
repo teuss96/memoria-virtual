@@ -14,6 +14,7 @@
 
 #define PAGE_SIZE 256
 #define NUM_PAGES 256
+#define TLB_SIZE 16
 #ifndef NUM_FRAMES
 #define NUM_FRAMES 128 // metade das 256 paginas: obriga a substituir paginas
 #endif
@@ -28,6 +29,14 @@ static int frame_page[NUM_FRAMES];                // pagina no quadro; -1 = quad
 static unsigned long frame_stamp[NUM_FRAMES];     // fifo: instante da carga; lru: do ultimo uso
 static unsigned long now;                         // relogio logico: numero do acesso atual
 static enum policy page_policy;
+
+struct tlb_entry {
+    int page; // -1 = posicao vazia
+    int frame;
+};
+
+static struct tlb_entry tlb[TLB_SIZE];
+static unsigned long tlb_stamp[TLB_SIZE]; // instante em que a posicao foi gravada
 
 // mostra o erro e encerra o programa
 static void die(const char *fmt, ...)
@@ -127,13 +136,43 @@ static int oldest(const unsigned long *stamp, int n)
     return best;
 }
 
+// posicao da pagina na TLB, ou -1 se ela nao estiver la
+static int tlb_lookup(int page)
+{
+    int i;
+
+    for (i = 0; i < TLB_SIZE; i++)
+        if (tlb[i].page == page)
+            return i;
+    return -1;
+}
+
+// grava a traducao na posicao mais antiga da TLB e devolve essa posicao
+static int tlb_insert(int page, int frame)
+{
+    int slot = oldest(tlb_stamp, TLB_SIZE);
+
+    tlb[slot].page = page;
+    tlb[slot].frame = frame;
+    tlb_stamp[slot] = now;
+    return slot;
+}
+
 // falta de pagina: traz a pagina do BACKING_STORE e devolve o quadro usado
 static int page_in(FILE *store, int page)
 {
     int frame = oldest(frame_stamp, NUM_FRAMES);
+    int victim = frame_page[frame];
+    int i;
 
-    if (frame_page[frame] != -1)
-        page_table[frame_page[frame]] = -1; // a vitima sai da memoria
+    if (victim != -1) {
+        page_table[victim] = -1; // a vitima sai da memoria
+        // a TLB nao pode continuar apontando para um quadro que mudou de dono;
+        // o carimbo fica, entao a posicao mantem o lugar na fila de substituicao
+        for (i = 0; i < TLB_SIZE; i++)
+            if (tlb[i].page == victim)
+                tlb[i].page = -1;
+    }
     if (fseek(store, (long)page * PAGE_SIZE, SEEK_SET) != 0 ||
         fread(memory[frame], 1, PAGE_SIZE, store) != PAGE_SIZE)
         die("falha ao ler a pagina %d de " BACKING_STORE, page);
@@ -148,7 +187,7 @@ int main(int argc, char **argv)
     enum policy tlb_policy;
     uint32_t *addrs;
     size_t n_addrs, i;
-    unsigned long faults = 0;
+    unsigned long faults = 0, tlb_hits = 0;
     FILE *store, *out;
 
     if (argc != 4)
@@ -168,26 +207,38 @@ int main(int argc, char **argv)
         page_table[i] = -1;
     for (i = 0; i < NUM_FRAMES; i++)
         frame_page[i] = -1;
+    for (i = 0; i < TLB_SIZE; i++)
+        tlb[i].page = -1;
 
     for (i = 0; i < n_addrs; i++) {
         uint32_t addr = addrs[i] & 0xFFFF; // so os 16 bits menos significativos
         int page = (int)(addr >> 8);
         int offset = (int)(addr & 0xFF);
-        int frame = page_table[page];
+        int slot, frame;
 
         now++;
-        if (frame == -1) {
-            faults++;
-            frame = page_in(store, page);
-        } else if (page_policy == LRU) {
-            frame_stamp[frame] = now; // no fifo o carimbo so muda na carga
+        slot = tlb_lookup(page);
+        if (slot != -1) {
+            tlb_hits++;
+            frame = tlb[slot].frame;
+        } else {
+            frame = page_table[page];
+            if (frame == -1) {
+                faults++;
+                frame = page_in(store, page);
+            }
+            slot = tlb_insert(page, frame);
         }
-        fprintf(out, "Virtual address: %lu Physical address: %d Value: %d\n",
-                (unsigned long)addrs[i], frame * PAGE_SIZE + offset, memory[frame][offset]);
+        if (page_policy == LRU)
+            frame_stamp[frame] = now; // no fifo o carimbo so muda na carga
+        fprintf(out, "Virtual address: %lu TLB: %d Physical address: %d Value: %d\n",
+                (unsigned long)addrs[i], slot, frame * PAGE_SIZE + offset, memory[frame][offset]);
     }
     fprintf(out, "Number of Translated Addresses = %lu\n", (unsigned long)n_addrs);
     fprintf(out, "Page Faults = %lu\n", faults);
     fprintf(out, "Page Fault Rate = %.3f\n", (double)faults / (double)n_addrs);
+    fprintf(out, "TLB Hits = %lu\n", tlb_hits);
+    fprintf(out, "TLB Hit Rate = %.3f\n", (double)tlb_hits / (double)n_addrs);
 
     if (ferror(out) || fclose(out) != 0)
         die("falha ao gravar " OUTPUT_FILE);
