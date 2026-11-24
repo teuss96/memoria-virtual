@@ -1,0 +1,16 @@
+# executaveis e objetos
+/vm
+/vm_asan
+/vm_tsan
+*.o
+
+# saida gerada pelo programa
+/correct.txt
+
+# pacote de entrega
+*.tar
+
+# documentos de trabalho ficam fora do repositorio
+*.md
+*.html
+*.pdf
